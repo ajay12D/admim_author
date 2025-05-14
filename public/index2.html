@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+       .disabled {
+              pointer-events: none;
+              color: green;
+        }
+      </style>
+</head>
+<body>
+    <h4>
+    here is the sing up link
+    </h4>
+    <a href = http://localhost:3000/ id = "a" onclick="removeLink()">signup</a>
+    <script>
+        const element = document.getElementById("a"); 
+
+        function removeLink(){
+            element.setAttribute("class", "disabled");
+        }
+        </script>
+</body>
+</html>
+
+<html>
+        

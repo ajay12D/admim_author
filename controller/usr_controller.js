@@ -1,7 +1,16 @@
 import { User } from "../model/usr_schema.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
+import * as url from 'url';
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+import fs from 'fs/promises';
+import path from 'path'
+import { identity } from "../model/image_schema.js";
+import { error } from "console";
+import multer from "multer";
+
 
 
 const transporter = nodemailer.createTransport({
@@ -15,10 +24,11 @@ const transporter = nodemailer.createTransport({
   });
 
 export const signup = async (req,res) => {
+
     const email = req.body.email;
     const {password} = req.body;
     const {username} = req.body;
-    const {is_admin} = req.body
+    const {is_admin} = req.body;
 
     try{
          const hased_password = await bcrypt.hash(password, 7);
@@ -30,12 +40,13 @@ export const signup = async (req,res) => {
             is_admin:is_admin
 
            })
-
+        
            if(usr){
             res.status(200).json({
                 message: 'user signupn successfully'
             })
             return
+            
            }
 
            else{
@@ -93,8 +104,75 @@ export const signin = async (req,res) => {
         })
        }
 
+};
+
+
+
+
+export const saving_details = async (req,res) => {
+
+    const {user_id} = req;
+    const {img_url} = req.body
+
+    try{
+        const usr = await User.findById({_id:user_id});
+        if(usr){
+      const img = await identity.create({
+        Image:img_url,
+        user: user_id
+      })
+
+       if(img){
+        res.status(200).json({
+          message:'image updated'
+        })
+        return
+       }
+       else{
+        res.status(404).json({
+            message:'invalid_input'
+          })
+          return
+       }
+        }
+    }
+    catch(e){
+        res.status(404).json({
+            message:'invalid_input'
+          })
+    }
 }
 
+ export const getUser = async(req,res) => {
+          const {user_id} = req;
+
+          try{
+            const usr = await User.findById({_id:user_id});
+             if(usr){
+                res.status(200).json({
+                    usr
+                })
+                return
+             }
+             else{
+                res.status(403).json({
+                    message: 'invalid_credentials'
+                })
+                return
+             }
+          }
+          catch(e){
+                 res.status(404).json({
+                    message: 'something went wrong',
+                    error: e.message
+                 })
+          }
+ }
+export const uploadFile= (re,res)=>{
+    res.status(200).json({
+       message: 'file successfully uploaded'
+    })
+}
 
 
 export const add_user = async (req,res) => {
@@ -154,13 +232,15 @@ export const send_invite = async (req, res) => {
         message: 'only admin have the access to invite user'
       })
     }
+     
+
 
     let mailDetails = {
         from: 'ajay@gmail.com',
         to: 'randomUser@gmail.com',
         subject: 'sign up user',
         text: 'tetsing signup functionalty',
-        html:`<a href = http://localhost:3000/>signup</a>`
+        html: `<a href = http://localhost:5173/signup>signup</a>`
     };
     
     
@@ -178,7 +258,8 @@ export const send_invite = async (req, res) => {
   }
    catch(e){
        res.status(404).json({
-        message: 'somthing went wrong'
+        message: 'somthing went wrong',
+        error: e.message
        })
    }
 

@@ -6,10 +6,21 @@
     <title>Document</title>
 </head>
 <body>
-    <input id = "1" type="text" name="email" placeholder="email" value="">
-    <input  id = "2" type="text" name="username" placeholder="username" value=""/>
-    <input id = "3" type="text" name="password" placeholder="password"/ value="">
-    <button onclick="handler()">signup</button>
+    <div>
+        <div style="display: flex; justify-content: center; margin-bottom: 20px; margin-top: 40px;">
+        <label for = "email" style="margin-right: 3px;"> Email</label>
+        <input id = "1" type="text" name="email" placeholder="email" value="">
+    </div>
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <label for = "username" style="margin-right: 3px;">username</label>
+         <input  id = "2" type="text" name="username" placeholder="username" value=""/>
+    </div>
+   <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+     <label for = "password" style="margin-right: 3px;">password</label> 
+    <input id = "3" type="text" name="password" placeholder="password" value="">
+   </div>
+    <div style="display: flex; justify-content: center;">
+        <button onclick="handler()">signup</button>
     <script>
    async function handler (){
         const email = document.getElementById("1").value;
@@ -28,8 +39,6 @@
         username: username
     })
 });
-
-
     }
     </script>
 </body>
