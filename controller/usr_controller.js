@@ -10,6 +10,7 @@ import path from 'path'
 import { identity } from "../model/image_schema.js";
 import { error } from "console";
 import multer from "multer";
+import { usr_address } from "../model/address_schema.js";
 
 
 
@@ -168,59 +169,80 @@ export const saving_details = async (req,res) => {
                  })
           }
  }
-export const uploadFile= (re,res)=>{
-    res.status(200).json({
-       message: 'file successfully uploaded'
-    })
-}
-
-
-export const add_user = async (req,res) => {
-    
+export const uploadFile= async (req,res)=>{
     const {user_id} = req;
-    const {email} = req.body;
-    const {password} = req.body;
-    const {username} = req.body;
+    const image = req.file.filename
+
+     
+      const file = await identity.create({
+              image: image,
+              user:user_id
+      });
+      if(file){
+        res.status(200).json({
+            message: 'file successfully uploaded',
+            file
+         })
+         return
+      }
+      else{
+            res.status(403).json({
+                message:" invlid_credentials"
+            })
+      }
+   
+;}
+
+
+
+
+
+
+
+ export const user_info = async (req,res) =>{
+    const {user_id} = req;
 
     try{
+        const file = await identity.findOne({user: user_id})
 
-        const admin = await User.findById(user_id);
-        if(!admin.is_admin == true){
-          res.status(403).json({
-            message: 'only admin have the access to create user'
-          })
-        }
-
-         const hased_password = await bcrypt.hash(password, 7);
-
-       const usr =    await User.create({
-            email: email,
-            password: hased_password,
-            username:username,
-            is_admin:is_admin
-
-           })
-
-           if(usr){
+         if(file){
             res.status(200).json({
-                message: 'user signupn successfully'
+                message: 'getting the image',
+                file
             })
-            return
-           }
-
-           else{
-            res.status(404).json({
-                message: 'invalid input'
-            })
-       }
+         }
+         else{
+               res.status(403).json({
+                message: 'invalid_input'
+               })
+         }
     }
     catch(e){
         res.status(404).json({
-            message: 'somthing went wrong',
-            error:e.message
-    })
-}
+            message: 'somthng went wrong',
+            error: e.message
+        })
+    }
+ }
 
+export const update_img = async (req,res) => {
+    
+    const {user_id} = req;
+    const {image} = req.file.filename
+
+     const file = await identity.findByIdAndUpdate(user_id, {image: image});
+
+     if(img){
+        res.status(200).json({
+            message: 'user updated the image',
+            file
+        })
+     }
+     else{
+        res.status(200).json({
+            message: 'invalid_credentials'
+        })
+     }
 };
 
 export const send_invite = async (req, res) => {
@@ -233,8 +255,6 @@ export const send_invite = async (req, res) => {
       })
     }
      
-
-
     let mailDetails = {
         from: 'ajay@gmail.com',
         to: 'randomUser@gmail.com',
@@ -262,10 +282,67 @@ export const send_invite = async (req, res) => {
         error: e.message
        })
    }
+}
 
-        
+export const puting_address = async (req,res) => {
+    const {user_id} = req;
+    const {address} = req.body;
+    try{
+        const usr = await usr_address.create({
+             address: address,
+                user: user_id
+        })
+        if(usr){
+          res.status(200).json({
+            message: 'usr adress added',
+            address
+          })
+        }
+    }
+    catch(e){
+         res.status(404).json({
+            message: 'somthing went wrong',
+            error: e.message
+         })
+    }
+}
 
+export const my_details =async (req,res) => {
+
+        const {user_id} = req;
+        try{
+            const usr = await User.findById(user_id);
+            if(usr){
+                const img = await identity.findOne({user: user_id});
+                if(img){
+                    const addrs = await usr_address.findOne({user: user_id});
+                    if(img){
+                        res.status(200).json({
+                            message: 'yes user fetched successfully',
+                            user:usr,
+                            image:img,
+                            address: addrs
+
+                        })
+                    }
+                    else{
+                        res.status(403).json({
+                            message: 'inavalid credentails'
+                        })
+                    }
+                }
+            }
+        }
+        catch(e){
+            res.status(403).json({
+                messsage: 'something went wrong',
+                error: e.message
+            })
+        }
 }
 
 
-
+export const app = async (req,res) => {
+               
+    
+}

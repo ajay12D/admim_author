@@ -1,3 +1,4 @@
+import { identity } from '../model/image_schema.js';
 import jwt from 'jsonwebtoken';
 
 export const auth = (req, res, next) => {
@@ -25,4 +26,21 @@ export const auth = (req, res, next) => {
         })
     }
 
-}
+};
+
+
+
+  export const upload_checker = async (req,res,next) => {
+        const user_id = req.user_id;
+
+          const file_prsnt = await identity.findOne({user: user_id});
+
+          if(file_prsnt){
+           console.log('user alredy uploaded')
+            return
+          }
+          else{
+            next();
+          }
+         
+  }

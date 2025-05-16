@@ -1,6 +1,10 @@
 import { Router } from "express";
-import { signin, signup , add_user, send_invite, getUser, saving_details,uploadFile} from "../controller/usr_controller.js";
-import { auth } from "../middleware/auth_middle.js";
+import { signin, signup ,
+  send_invite, getUser,
+   saving_details,uploadFile, user_info, puting_address, my_details} from "../controller/usr_controller.js";
+   import { csvConverter } from "../controller/csvConverion.js";
+import { auth, upload_checker} from "../middleware/auth_middle.js";
+
 import path from 'path'
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -23,7 +27,7 @@ import multer from "multer";
 router.post('/signup', signup);
 router.post('/signin', signin);
 
-router.post('/add_user',auth, add_user);
+//router.post('/add_user',auth, add_user);
 
 router.post('/invite',auth,send_invite);
 
@@ -31,7 +35,13 @@ router.get('/user',auth, getUser);
 
 router.post('/img_upate',auth, saving_details);
 
-router.post("/upload_single", upload.single("profile-files"), uploadFile);
+router.get('/user_details', auth, user_info);
 
+
+router.post('/usr_address', auth, puting_address);
+
+router.get('/me', auth, my_details);
+router.post('/csv-genrater', auth,csvConverter)
 
 export default router;
+router.post("/upload_single", auth, upload_checker, upload.single("profile-files"), uploadFile);
