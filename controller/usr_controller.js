@@ -3,18 +3,20 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from 'nodemailer';
 import * as url from 'url';
+import { error } from "console";
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 import fs from 'fs/promises';
 import path from 'path'
 import { identity } from "../model/image_schema.js";
-import { error } from "console";
 import multer from "multer";
 import { usr_address } from "../model/address_schema.js";
 
 
 
-const transporter = nodemailer.createTransport({
+
+
+export const transporter = nodemailer.createTransport({
     host: "sandbox.smtp.mailtrap.io",
     port: 25,
     secure: false, 
@@ -38,7 +40,7 @@ export const signup = async (req,res) => {
             email: email,
             password: hased_password,
             username:username,
-            is_admin:is_admin
+            is_admin:(!!is_admin)
 
            })
         
@@ -80,7 +82,6 @@ export const signin = async (req,res) => {
             const c_result = await bcrypt.compare(password, usr.password);
             if(c_result){
                 token = jwt.sign({user_id: usr._id}, process.env.jwt_secrt, {
-                    expiresIn: '5h'
                 })
 
             }
@@ -90,6 +91,7 @@ export const signin = async (req,res) => {
                     token
                 })
                 return
+                expiresIn: '5h'
             }
             else{
                 res.status(403).json({
@@ -106,7 +108,6 @@ export const signin = async (req,res) => {
        }
 
 };
-
 
 
 
@@ -144,23 +145,50 @@ export const saving_details = async (req,res) => {
     }
 }
 
+
  export const getUser = async(req,res) => {
           const {user_id} = req;
 
-          try{
+          try{ 
+            let add
             const usr = await User.findById({_id:user_id});
-             if(usr){
-                res.status(200).json({
-                    usr
-                })
-                return
-             }
-             else{
-                res.status(403).json({
-                    message: 'invalid_credentials'
-                })
-                return
-             }
+            if(!usr.is_admin){
+                const address = await usr_address.findOne({user:user_id});
+                if(!address.address){
+                    add = false
+                }
+                else{
+                 add = true
+                }
+              if(usr){
+                 res.status(200).json({
+                     usr:usr,
+                     add
+                 })
+                 return
+              }
+              else{
+                 res.status(403).json({
+                     message: 'invalid_credentials'
+                 })
+                 return
+              }
+            }
+            else{
+              if(usr){
+                 res.status(200).json({
+                     usr:usr,
+                 })
+                 return
+              }
+              else{
+                 res.status(403).json({
+                     message: 'invalid_credentials'
+                 })
+                 return
+              }
+            }
+           
           }
           catch(e){
                  res.status(404).json({
@@ -337,12 +365,8 @@ export const my_details =async (req,res) => {
             res.status(403).json({
                 messsage: 'something went wrong',
                 error: e.message
-            })
+            })  
         }
 }
 
 
-export const app = async (req,res) => {
-               
-    
-}

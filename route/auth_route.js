@@ -2,7 +2,7 @@ import { Router } from "express";
 import { signin, signup ,
   send_invite, getUser,
    saving_details,uploadFile, user_info, puting_address, my_details} from "../controller/usr_controller.js";
-   import { csvConverter } from "../controller/csvConverion.js";
+   import { csvConverter, conversion } from "../controller/csvConverion.js";
 import { auth, upload_checker} from "../middleware/auth_middle.js";
 
 import path from 'path'
@@ -41,7 +41,8 @@ router.get('/user_details', auth, user_info);
 router.post('/usr_address', auth, puting_address);
 
 router.get('/me', auth, my_details);
-router.post('/csv-genrater', auth,csvConverter)
+router.post('/csv-genrater', auth,csvConverter,conversion);
+
 
 export default router;
 router.post("/upload_single", auth, upload_checker, upload.single("profile-files"), uploadFile);
