@@ -28,10 +28,11 @@ export const transporter = nodemailer.createTransport({
 
 export const signup = async (req,res) => {
 
-    const email = req.body.email;
+    const {email} = req.body;
     const {password} = req.body;
     const {username} = req.body;
     const {is_admin} = req.body;
+
 
     try{
          const hased_password = await bcrypt.hash(password, 7);
@@ -39,7 +40,7 @@ export const signup = async (req,res) => {
        const usr =    await User.create({
             email: email,
             password: hased_password,
-            username:username,
+            username: username,
             is_admin:(!!is_admin)
 
            })
@@ -312,6 +313,7 @@ export const send_invite = async (req, res) => {
    }
 }
 
+
 export const puting_address = async (req,res) => {
     const {user_id} = req;
     const {address} = req.body;
@@ -360,7 +362,7 @@ export const my_details =async (req,res) => {
                     }
                 }
             }
-        }
+            }
         catch(e){
             res.status(403).json({
                 messsage: 'something went wrong',
@@ -370,3 +372,68 @@ export const my_details =async (req,res) => {
 }
 
 
+     export const specific_user = async (req, res) => {
+        const {username} = req.body;
+
+     try{
+         
+        const user = await User.findOne({username:username});
+        const usr = await usr_address.findOne({user: user._id});
+          if(user){
+            res.status(200).json({
+                message: 'gheting the user',
+                user,
+                address: usr.address
+            })
+          }
+          else{
+             res.status(403).json({
+                message: "user not foundd",
+                user
+
+             })
+          }
+     }
+      catch(e){
+        res.status(500).json({
+            message: "somthing went wrong",
+            error: e.message
+        })  
+      }
+     }
+
+
+     export const all_users = async (req, res) => {
+        const {user_id} = req;
+        try{
+            const user = await User.find({_id: {$ne: user_id}});
+            const address = await usr_address.find({user: {$ne: user_id}});
+            if(user){
+
+                  for(let i=0; i<user.length; i++){
+                    for(let j=0;j<address.length; j++){
+                        if(String(user[i]._id) == String(address[j].user)){
+                            Object.assign(user[i],address[j])
+                        }
+                    }
+                  }
+                  console.log(user)
+                res.status(200).json({
+                    message: 'user found succesfully',
+                    user,
+                })
+            }
+            else{
+                res.status(403).json({
+                    message: 'user found succesfully',
+                    error: 'invalid credentials'
+                })
+            }
+        }
+        catch(e){
+            res.status(500).json({
+                message: 'internal error',
+                error:    e.message
+            })
+        }
+     }
