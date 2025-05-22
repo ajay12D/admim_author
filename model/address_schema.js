@@ -12,9 +12,9 @@ const user_address = new schema ({
     },
 
     user:{
-        type: String,
+        type: object_id,
         required:true,
-        ref:'user',
+        ref:'users',
         unique:true
     }
 },{

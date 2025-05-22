@@ -247,7 +247,7 @@ export const uploadFile= async (req,res)=>{
          }
     }
     catch(e){
-        res.status(404).json({
+        res.status(404).json({      
             message: 'somthng went wrong',
             error: e.message
         })
@@ -406,24 +406,29 @@ export const my_details =async (req,res) => {
      export const all_users = async (req, res) => {
         const {user_id} = req;
         try{
-            const user = await User.find({_id: {$ne: user_id}});
-            const address = await usr_address.find({user: {$ne: user_id}});
-            if(user){
-
-                  for(let i=0; i<user.length; i++){
-                    for(let j=0;j<address.length; j++){
-                        if(String(user[i]._id) == String(address[j].user)){
-                            Object.assign(user[i],address[j])
-                        }
+            
+            const data = await usr_address.aggregate([
+                {
+                    $lookup:{
+                        from: "users",
+                        localField:"user",
+                        foreignField: "_id",
+                        as: "user"
                     }
-                  }
-                  console.log(user)
+                },
+                {
+                    $unwind: "$user"
+                }
+            ]);
+
+            if(data){
+                  
                 res.status(200).json({
                     message: 'user found succesfully',
-                    user,
+                    data,
                 })
             }
-            else{
+            else{   
                 res.status(403).json({
                     message: 'user found succesfully',
                     error: 'invalid credentials'
