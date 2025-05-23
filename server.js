@@ -10,6 +10,7 @@ import path from "path"
 const app = express(); 
 import {Server} from "socket.io";
 import http from 'http';
+import otp_router from "./route/otp_route.js"
 
 
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api', auth_router)
+app.use('/api', otp_router)
 app.use('/', (req,res) => {
 
     res.sendFile(__dirname + "/public/index.html");
@@ -27,14 +29,13 @@ app.use('/', (req,res) => {
 const server = http.createServer(app);
 
 const io = new Server(server,{
-    cors:{
-        origin: "http://localhost:5173",
-        method:  ["GET", "POST"],
+    cors: {
+        origin: 'http://localhost:5173',
+        methods: ["GET", "POST"]
     }
 });
 
-
-
+  
 
 io.on("connection", (socket) => {
     const data = "user craeted successfully"

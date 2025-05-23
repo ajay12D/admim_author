@@ -11,6 +11,7 @@ import path from 'path'
 import { identity } from "../model/image_schema.js";
 import multer from "multer";
 import { usr_address } from "../model/address_schema.js";
+import { Otp } from "../model/otp_schema.js";
 
 
 
@@ -32,31 +33,55 @@ export const signup = async (req,res) => {
     const {password} = req.body;
     const {username} = req.body;
     const {is_admin} = req.body;
+    const {otp} = req.body
+
 
 
     try{
-         const hased_password = await bcrypt.hash(password, 7);
 
-       const usr =    await User.create({
-            email: email,
-            password: hased_password,
-            username: username,
-            is_admin:(!!is_admin)
-
-           })
-        
-           if(usr){
-            res.status(200).json({
-                message: 'user signupn successfully'
+        const otps =  await Otp.find({ email: email});
+        if(otps.length ==0){
+            res.status(403).json({
+                message: 'invalid otp'
             })
             return
-            
-           }
+        };
+        const filterOtp = otps.filter(o => o.name == "regiter_otp");
+        const myOtp = filterOtp[filterOtp.length-1];
 
+        const hasedOtp = myOtp.otp;
+        const vaildOtp = await bcrypt.compare(otp, hasedOtp);
+           if(vaildOtp){
+            const hased_password = await bcrypt.hash(password, 7);
+            const usr =    await User.create({
+                email: email,
+                password: hased_password,
+                username: username,
+                is_admin:(!!is_admin)
+    
+               });
+
+               await Otp.deleteMany({email: myOtp.email});
+               
+            
+               if(usr){
+                res.status(200).json({
+                    message: 'user signupn successfully'
+                })
+                return
+                
+               }
+    
+               else{
+                res.status(404).json({
+                    message: 'invalid input'
+                })
+               }
+           }
            else{
-            res.status(404).json({
-                message: 'invalid input'
-            })
+                 res.status(200).json({
+                    message: "invalid_otp",
+                 })
            }
     }
 
@@ -66,15 +91,12 @@ export const signup = async (req,res) => {
             erro:e.message
         })
     }
-
-
 }
 
 
 export const signin = async (req,res) => {
         const {email} = req.body;
-        const {password} = req.body;   
-      
+        const {password} = req.body;    
        try{
         let token;
         const usr = await User.findOne({email: email});
